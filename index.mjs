@@ -11,19 +11,19 @@ console.log('Launching...');
 const ctcAlice = accAlice.contract(backend);
 const ctcBob = accBob.contract(backend, ctcAlice.getInfo());
 
-const NUMBER = ['One', 'Two', 'Three'];
-const OUTCOME = ['Alice wins', 'Draw', 'Bob wins'];
+const PRICE = ['High', 'Medium', 'Low'];
+const RESULT = ['Alice wins', 'Draw', 'Bob wins'];
 
 
 
 const Deal = (Who) => ({
-    pickednumber: () => {
-      const number =  Math.floor(Math.random() * 3);
-      console.log(`${Who} guessed ${NUMBER[number]}`)
-      return number;
+    pickedPrice: () => {
+      const pickedPrice =  Math.floor(Math.random() * 3);
+      console.log(`${Who} guessed ${PRICE[pickedPrice]}`)
+      return pickedPrice;
     },
-    seeOutcome: (outcome) => {
-    console.log(`${Who}  saw the ${OUTCOME[outcome]})`)
+    seeOutcome: (result) => {
+    console.log(`${Who}  saw the ${RESULT[result]})`)
 }
 
 });
