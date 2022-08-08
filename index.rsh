@@ -1,33 +1,47 @@
 'reach 0.1';
 
+
+const [isNumber, ONE, TWO, THREE] = makeEnum(3);
+const [isResults, ALICE_WIN, DRAW, BOB_WINS] =makeEnum(3);
+
+//dual functions performed by all paticipants.
 const Deal = {
-  ...hasRandon,
-  pickNumber: Fun([], UInt ),
-  displayResult: Fun([], UInt),
+  ...hasRandom,
+  Number: Fun([], UInt ),
+  seeOutcome: Fun([], UInt),
   informTImeOut: Fun([], UInt),
   informDraw: Fun([], UInt),
 }
 
 
 export const main = Reach.App(() => {
-  const A = Participant('Alice', {
+
+  const Alice = Participant('Alice', {
    ...Deal,
-   stake: UInt,
+   price: UInt,
    deadline: UInt,
   });
-  const B = Participant('Bob', {
+  
+  const Bob = Participant('Bob', {
     ...Deal,
-    acceptStake: Fun([UInt], null),
+    acceptPrice: Fun([UInt], null),
   });
   init();
 
   // The first one to publish deploys the contract
-  A.publish();
-  commit();
+Alice.only(() => {
+  const price = declassify(interact.price);
+  const deadline = declassify(interact.deadline);
+})
+Alice.publish(wager, deadline);
+commit();
 
 
   // The second one to publish always attaches
-  B.publish();
+Bob.only(() => {
+  interact.acceptPrice(price);
+})
+  Bob.publish();
   commit();
   // write your program here
   exit();
