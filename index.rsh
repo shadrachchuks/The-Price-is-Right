@@ -6,16 +6,14 @@ const [isResults, ALICE_WIN, DRAW, BOB_WINS ] = makeEnum(3);
 
 const winner = (guessAlice, guessBob) => ((guessAlice + ( 4 - guessBob)) % 3);
 
-assert(winner(HIGH, LOW) == ALICE_WIN);
-assert(winner(LOW, HIGH) == BOB_WINS);
+assert(winner(HIGH, MEDIUM) == ALICE_WIN);
+assert(winner(MEDIUM, HIGH) == BOB_WINS);
 assert(winner(HIGH, HIGH) == DRAW);
 
 //we create a loop that will ensure that the value in winner is the ultimate outcome.
-forall(UInt, guessAlice =>
-  forall(UInt, guessBob =>
-    assert(isResults(winner(guessAlice, guessBob)))));
+forall(UInt, guessAlice => forall(UInt, guessBob => assert(isResults(winner(guessAlice, guessBob)))));
 
-forall(UInt, (guessedPrice) => assert(winner(isResult(winner(guessAlice, guessBob)))));
+forall(UInt, (guessedPrice) => assert(winner(guessedPrice, guessedPrice) == DRAW));
 
 //dual functions performed by all paticipants...............
 const Deal = {
@@ -48,15 +46,24 @@ Alice.publish(wager, commitAlice).pay(wager);
 commit();
 
 //Here we hiding the price picked by Alice from Bob before he publishes his guessed price
-// unknowable(Bob, Alice(guessAlice));
 
-
+unknowable(Bob, Alice(_guessAlice, _saltAlice));
 // The second one to publish always attaches
 Bob.only(() => {
   interact.acceptWager(wager);
   const guessBob = declassify(interact.guessedPrice());
 })
-  Bob.publish(guessBob).pay(wager)
+  Bob.publish(guessBob).pay(wager);
+  commit();
+
+//here we make Alice publish her guess so it becomes public after bob has accepted the wager and publish his guess
+Alice.only(() => {
+  const saltAlice = declassify(_saltAlice);
+  const guessAlice = declassify(_guessAlice);
+});
+
+Alice.publish(saltAlice, guessAlice);
+checkCommitment(commitAlice, saltAlice, guessAlice);
 
 const result = (guessAlice + (4 - guessBob)) % 3;
 //based on our verifyArithmetic (result) we check if we have a draw or a winner.
@@ -64,17 +71,15 @@ const aliceWin = [2, 0];
 const bobWin = [0, 2];
 const draw = [1, 1];
 
-const [forAlice, forBob] = result == 2 ? aliceWin : result == 0 ? bobWin : draw;
+const [forAlice, forBob] = result == ALICE_WIN ? aliceWin : result == BOB_WINS ? bobWin : draw;
 
 transfer(forAlice * wager).to(Alice);
 transfer(forBob  * wager).to(Bob);
-
 commit();
 
 //There each paticpate see the outcome of the steps that take.
 each([Alice, Bob], () => {
     interact.seeResult(result);
 });
-
   exit();
 });

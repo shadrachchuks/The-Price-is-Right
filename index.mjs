@@ -43,13 +43,11 @@ console.log('Starting backends...');
 
 await Promise.all([
   backend.Alice(ctcAlice, {
-    ...stdlib.hasRandom,
     // implement Alice's interact object here
     ...Deal('Alice'),
      wager: stdlib.parseCurrency(5),
   }),
   backend.Bob(ctcBob, {
-    ...stdlib.hasRandom,
     // implement Bob's interact object here
     ...Deal('Bob'),
     acceptWager:  (amt) => {
