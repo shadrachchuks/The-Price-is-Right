@@ -35,7 +35,11 @@ const Deal = (Who) => ({
     },
     seeResult: (result) => {
     console.log(`${Who} saw the ${RESULT[result]}`)
-}
+    },
+
+    informTimeout: () => {
+      console.log(`${Who} Observed a timeout`)
+    }
 
 });
 

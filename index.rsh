@@ -20,13 +20,14 @@ const Deal = {
   ...hasRandom,
   guessedPrice: Fun([], UInt ),
   seeResult: Fun([UInt], Null),
+  informTimeout: Fun([], null)
 }
 
 export const main = Reach.App(() => {
   const Alice = Participant('Alice', {
    ...Deal,
    wager: UInt,
-  //  deadline: UInt,
+   deadline: UInt,
   });
 
   const Bob = Participant('Bob', {
@@ -34,6 +35,12 @@ export const main = Reach.App(() => {
     acceptWager: Fun([UInt], Null)
   });
   init();
+
+//Informing each paticipate of a timeout in progam
+
+const informTimeout = () => {
+  each([Alice, Bob], )
+}
 
 // The first one to publish deploys the contract
 Alice.only(() => {
