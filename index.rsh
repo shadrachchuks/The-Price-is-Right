@@ -20,7 +20,7 @@ const Deal = {
   ...hasRandom,
   guessedPrice: Fun([], UInt ),
   seeResult: Fun([UInt], Null),
-  informTimeout: Fun([], null)
+  informTimeout: Fun([], Null)
 }
 
 export const main = Reach.App(() => {
@@ -39,7 +39,9 @@ export const main = Reach.App(() => {
 //Informing each paticipate of a timeout in progam
 
 const informTimeout = () => {
-  each([Alice, Bob], )
+    each([Alice, Bob], () => {
+      interact.informTimeout();
+  })
 }
 
 // The first one to publish deploys the contract
@@ -48,8 +50,9 @@ Alice.only(() => {
   const _guessAlice = interact.guessedPrice();
   const [_commitAlice, _saltAlice] = makeCommitment(interact, _guessAlice);
   const commitAlice = declassify(_commitAlice);
+  const deadline = declassify(interact.deadline);
 })
-Alice.publish(wager, commitAlice).pay(wager);
+Alice.publish(wager, commitAlice, deadline).pay(wager);
 commit();
 
 //Here we hiding the price picked by Alice from Bob before he publishes his guessed price
@@ -60,7 +63,9 @@ Bob.only(() => {
   interact.acceptWager(wager);
   const guessBob = declassify(interact.guessedPrice());
 })
-  Bob.publish(guessBob).pay(wager);
+  Bob.publish(guessBob)
+    .pay(wager)
+    .timeout(relativeTime(deadline), () => closeTo(Alice, informTimeout));
   commit();
 
 //here we make Alice publish her guess so it becomes public after bob has accepted the wager and publish his guess
@@ -69,7 +74,8 @@ Alice.only(() => {
   const guessAlice = declassify(_guessAlice);
 });
 
-Alice.publish(saltAlice, guessAlice);
+Alice.publish(saltAlice, guessAlice)
+.timeout(relativeTime(deadline), () => closeTo(Bob, informTimeout));
 checkCommitment(commitAlice, saltAlice, guessAlice);
 
 const result = (guessAlice + (4 - guessBob)) % 3;

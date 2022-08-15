@@ -40,7 +40,6 @@ const Deal = (Who) => ({
     informTimeout: () => {
       console.log(`${Who} Observed a timeout`)
     }
-
 });
 
 console.log('Starting backends...');
@@ -50,11 +49,19 @@ await Promise.all([
     // implement Alice's interact object here
     ...Deal('Alice'),
      wager: stdlib.parseCurrency(5),
+     deadline: 10,
   }),
   backend.Bob(ctcBob, {
     // implement Bob's interact object here
     ...Deal('Bob'),
-    acceptWager:  (amt) => {
+    acceptWager: async (amt) => {
+
+      if(Math.random() <= 0.5 ){
+        for( let i = 0; i < 10; i++ ){
+          console.log(`Bob is taking his time `);
+          await stdlib.wait(1);
+        } 
+      }
       console.log(`Bob accepts the ${fmt(amt)}`)
     }
   }),
