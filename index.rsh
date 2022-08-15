@@ -44,28 +44,47 @@ const informTimeout = () => {
   })
 }
 
+//Alice publish her wager and deadline.......
+Alice.only(() => {
+  const wager = declassify(interact.wager);
+  const deadline = declassify(interact.deadline);
+})
+Alice.publish(wager, deadline)
+.pay(wager);
+commit();
+
+//Bob makes his move in the accepting the wager...........
+Bob.only(() => {
+  interact.acceptWager(wager);
+});
+Bob.pay(wager)
+  .timeout(relativeTime(deadline), () => closeTo(Alice, informTimeout));
+
+
+/// validating the results to know and check the condition if its a draw then return back to the game run the process again
+var result = DRAW;
+invariant( balance() == 2 * wager && isResults(result) );
+while ( result == DRAW ) {
+commit();
+
 // The first one to publish deploys the contract
 Alice.only(() => {
-  const wager = declassify(interact.wager)
   const _guessAlice = interact.guessedPrice();
   const [_commitAlice, _saltAlice] = makeCommitment(interact, _guessAlice);
   const commitAlice = declassify(_commitAlice);
-  const deadline = declassify(interact.deadline);
 })
-Alice.publish(wager, commitAlice, deadline).pay(wager);
+Alice.publish(commitAlice)
+.timeout(relativeTime(deadline), () => closeTo(Bob, informTimeout));
 commit();
 
 //Here we hiding the price picked by Alice from Bob before he publishes his guessed price
-
 unknowable(Bob, Alice(_guessAlice, _saltAlice));
 // The second one to publish always attaches
 Bob.only(() => {
-  interact.acceptWager(wager);
   const guessBob = declassify(interact.guessedPrice());
 })
-  Bob.publish(guessBob)
-    .pay(wager)
-    .timeout(relativeTime(deadline), () => closeTo(Alice, informTimeout));
+ Bob.publish(guessBob)
+  .timeout(relativeTime(deadline), () => closeTo(Alice, informTimeout));
   commit();
 
 //here we make Alice publish her guess so it becomes public after bob has accepted the wager and publish his guess
@@ -78,21 +97,25 @@ Alice.publish(saltAlice, guessAlice)
 .timeout(relativeTime(deadline), () => closeTo(Bob, informTimeout));
 checkCommitment(commitAlice, saltAlice, guessAlice);
 
-const result = (guessAlice + (4 - guessBob)) % 3;
-//based on our verifyArithmetic (result) we check if we have a draw or a winner.
-const aliceWin = [2, 0];
-const bobWin = [0, 2];
-const draw = [1, 1];
+ result == winner(guessAlice, guessBob);
+  continue;
+}
 
-const [forAlice, forBob] = result == ALICE_WIN ? aliceWin : result == BOB_WINS ? bobWin : draw;
+// const result = (guessAlice + (4 - guessBob)) % 3;
+// //based on our verifyArithmetic (result) we check if we have a draw or a winner.
+// const aliceWin = [2, 0];
+// const bobWin = [0, 2];
+// const draw = [1, 1];
 
-transfer(forAlice * wager).to(Alice);
-transfer(forBob  * wager).to(Bob);
+// const [forAlice, forBob] = result == ALICE_WIN ? aliceWin : result == BOB_WINS ? bobWin : draw;
+
+assert(result == ALICE_WIN || result == BOB_WINS);
+transfer(2 * wager).to(result == ALICE_WIN ? Alice : Bob);
 commit();
 
 //There each paticpate see the outcome of the steps that take.
 each([Alice, Bob], () => {
     interact.seeResult(result);
 });
-  exit();
+  // exit();
 });

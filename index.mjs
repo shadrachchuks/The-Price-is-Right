@@ -28,9 +28,16 @@ const RESULT = ['Alice wins', 'Draw', 'Bob wins'];
 
 const Deal = (Who) => ({
   ...stdlib.hasRandom,
-    guessedPrice: () => {
+    guessedPrice: async () => {
       const guessedPrice =  Math.floor(Math.random() * 3);
-      console.log(`${Who} guessed ${GUESSEDPRICE[guessedPrice]}`)
+      console.log(`${Who} guessed ${GUESSEDPRICE[guessedPrice]}`);
+
+      if(Math.random() <= 0.01){
+        for( let i = 1; i < 10; i++ ){
+          console.log(`${Who} Takes their time sending back`)
+          await stdlib.wait(1);
+        }
+      }
       return guessedPrice;
     },
     seeResult: (result) => {
@@ -55,13 +62,6 @@ await Promise.all([
     // implement Bob's interact object here
     ...Deal('Bob'),
     acceptWager: async (amt) => {
-
-      if(Math.random() <= 0.5 ){
-        for( let i = 0; i < 10; i++ ){
-          console.log(`Bob is taking his time `);
-          await stdlib.wait(1);
-        } 
-      }
       console.log(`Bob accepts the ${fmt(amt)}`)
     }
   }),
