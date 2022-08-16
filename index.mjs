@@ -31,9 +31,8 @@ const Deal = (Who) => ({
     guessedPrice: async () => {
       const guessedPrice =  Math.floor(Math.random() * 3);
       console.log(`${Who} guessed ${GUESSEDPRICE[guessedPrice]}`);
-
-      if(Math.random() <= 0.01){
-        for( let i = 1; i < 10; i++ ){
+      if(Math.random() <= 0.05){
+        for( let i = 0; i < 10; i++ ){
           console.log(`${Who} Takes their time sending back`)
           await stdlib.wait(1);
         }
@@ -46,10 +45,11 @@ const Deal = (Who) => ({
 
     informTimeout: () => {
       console.log(`${Who} Observed a timeout`)
+    },
+    informDraw: () => {
+      console.log(`${Who} saw the result it was a draw`)
     }
 });
-
-console.log('Starting backends...');
 
 await Promise.all([
   backend.Alice(ctcAlice, {
@@ -61,7 +61,7 @@ await Promise.all([
   backend.Bob(ctcBob, {
     // implement Bob's interact object here
     ...Deal('Bob'),
-    acceptWager: async (amt) => {
+    acceptWager: (amt) => {
       console.log(`Bob accepts the ${fmt(amt)}`)
     }
   }),
@@ -75,7 +75,3 @@ const afterBob = await getBalance(accBob);
 
 console.log(`Alice moved from ${AliceBeforeBalance} to ${afteAclice}`)
 console.log(`Bob moved from ${BobBeforeBalance} to ${afterBob}`)
-
-
-
-console.log('Goodbye, Alice and Bob!');

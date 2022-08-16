@@ -15,12 +15,13 @@ forall(UInt, guessAlice => forall(UInt, guessBob => assert(isResults(winner(gues
 
 forall(UInt, (guessedPrice) => assert(winner(guessedPrice, guessedPrice) == DRAW));
 
-//dual functions performed by all paticipants...............
+//dual functions performed by all paticipants............
 const Deal = {
   ...hasRandom,
   guessedPrice: Fun([], UInt ),
   seeResult: Fun([UInt], Null),
-  informTimeout: Fun([], Null)
+  informTimeout: Fun([], Null),
+  informDraw: Fun([], Null)
 }
 
 export const main = Reach.App(() => {
@@ -37,12 +38,12 @@ export const main = Reach.App(() => {
   init();
 
 //Informing each paticipate of a timeout in progam
-
 const informTimeout = () => {
     each([Alice, Bob], () => {
       interact.informTimeout();
   })
-}
+};
+
 
 //Alice publish her wager and deadline.......
 Alice.only(() => {
@@ -63,10 +64,9 @@ Bob.pay(wager)
 
 /// validating the results to know and check the condition if its a draw then return back to the game run the process again
 var result = DRAW;
-invariant( balance() == 2 * wager && isResults(result) );
+invariant( balance() == 2 * wager && isResults(result));
 while ( result == DRAW ) {
 commit();
-
 // The first one to publish deploys the contract
 Alice.only(() => {
   const _guessAlice = interact.guessedPrice();
@@ -94,20 +94,12 @@ Alice.only(() => {
 });
 
 Alice.publish(saltAlice, guessAlice)
-.timeout(relativeTime(deadline), () => closeTo(Bob, informTimeout));
+  .timeout(relativeTime(deadline), () => closeTo(Bob, informTimeout));
 checkCommitment(commitAlice, saltAlice, guessAlice);
 
- result == winner(guessAlice, guessBob);
+result = winner(guessAlice, guessBob);
   continue;
 }
-
-// const result = (guessAlice + (4 - guessBob)) % 3;
-// //based on our verifyArithmetic (result) we check if we have a draw or a winner.
-// const aliceWin = [2, 0];
-// const bobWin = [0, 2];
-// const draw = [1, 1];
-
-// const [forAlice, forBob] = result == ALICE_WIN ? aliceWin : result == BOB_WINS ? bobWin : draw;
 
 assert(result == ALICE_WIN || result == BOB_WINS);
 transfer(2 * wager).to(result == ALICE_WIN ? Alice : Bob);
